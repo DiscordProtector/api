@@ -70,7 +70,6 @@ namespace api
         }
         [STAThread]static void Main(string[]args)
         {
-            var Debug = true;
             /* Stdout fix */
             Console.OpenStandardOutput();
             AttachConsole(-1);
@@ -127,10 +126,10 @@ namespace api
                             Process.Start(CPSI);
 
                             /* Check if mmm (Man in the middle) attack */
-                            if (CallerProcessPath != $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\DiscordProtector\\DiscordProtector.exe" && !Debug)
+                            if (CallerProcessPath != $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\DiscordProtector\\DiscordProtector.exe")
                             {
                                 /* Show popup */
-                                MessageBox.Show($"An unauthorised attempt to register an new install was made by: {CallerProcessPath}","Discord Protector",MessageBoxButtons.OK,MessageBoxIcon.Exclamation);
+                                MessageBox.Show($"An unauthorised attempt to install Discord Protector was made by: {CallerProcessPath}","Discord Protector",MessageBoxButtons.OK,MessageBoxIcon.Exclamation);
                                 CallerProcess.Kill();
                                 return;
                             };
@@ -144,14 +143,22 @@ namespace api
                                 string FC = File.ReadAllText($"{DPDataPath}/versions/{Edition}.discordprotector");
                                 if (Directory.Exists($"{DPDataPath}/clientdata/{FC}"))
                                 {
-                                    Directory.Move($"{DPDataPath}/clientdata/{FC}",$"{DPDataPath}/clientdata/{DataDir}");
+                                    Directory.Move($"{DPDataPath}/clientdata/{FC}", $"{DPDataPath}/clientdata/{DataDir}");
+                                };
+                            }
+                            else
+                            {
+                                /* Move old default dir */
+                                if (Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/{Edition}"))
+                                {
+                                    Directory.Move($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/{Edition}",$"{DPDataPath}/clientdata/{DataDir}");
                                 };
                             };
 
-                            /* Move old default dir */
+                            /* Delete old default dir for security */
                             if (Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/{Edition}"))
                             {
-                                Directory.Move($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/{Edition}",$"{DPDataPath}/clientdata/{DataDir}");
+                                Directory.Delete($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/{Edition}",true);
                             };
 
                             /* Write new hash */
@@ -170,9 +177,89 @@ namespace api
                             Thread.Sleep(5000);
                         };
                         break;
-                    case "--discordupdated":
-                        /* re install to new discord version */
+                    case "--uninstallinstall":
+                        /* uninstall an old install */
+                        if(args.Length == 3)
+                        {
+                            /* Variables */
+                            string Path = args[1];
+                            string Edition = args[2];
 
+                            /* Open DP data */
+                            if (!Directory.Exists(DPDataPath))
+                            {
+                                Directory.CreateDirectory(DPDataPath);
+                            };
+                            if (!Directory.Exists($"{DPDataPath}/versions"))
+                            {
+                                Directory.CreateDirectory($"{DPDataPath}/versions");
+                            };
+                            if (!Directory.Exists($"{DPDataPath}/protections"))
+                            {
+                                Directory.CreateDirectory($"{DPDataPath}/protections");
+                            };
+                            if (!Directory.Exists($"{DPDataPath}/clientdata"))
+                            {
+                                Directory.CreateDirectory($"{DPDataPath}/clientdata");
+                            };
+                            if (!Directory.Exists($"{DPDataPath}/hashes"))
+                            {
+                                Directory.CreateDirectory($"{DPDataPath}/hashes");
+                            };
+                            if (!File.Exists($"{DPDataPath}/key.discordprotector"))
+                            {
+                                File.WriteAllText($"{DPDataPath}/key.discordprotector", "");
+                            };
+
+                            /* Hide dir to prevent viruses looking for dir */
+                            var CPSI = new ProcessStartInfo();
+                            CPSI.CreateNoWindow = true;
+                            CPSI.WindowStyle = ProcessWindowStyle.Hidden;
+                            CPSI.FileName = "cmd.exe";
+                            CPSI.Arguments = $"/C attrib +h +s \"{DPDataPath}\"";
+                            Process.Start(CPSI);
+
+                            /* Check if mmm (Man in the middle) attack */
+                            if (CallerProcessPath != $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\DiscordProtector\\DiscordProtector.exe")
+                            {
+                                /* Show popup */
+                                MessageBox.Show($"An unauthorised attempt to uninstall Discord Protector was made by: {CallerProcessPath.Replace("\\", "/")}", "Discord Protector", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                CallerProcess.Kill();
+                                return;
+                            };
+
+                            /* Remove files */
+                            var DataDir = "";
+                            if (File.Exists($"{DPDataPath}/protections/{Edition}.discordprotector"))
+                            {
+                                File.Delete($"{DPDataPath}/protections/{Edition}.discordprotector");
+                            };
+                            if (File.Exists($"{DPDataPath}/versions/{Edition}.discordprotector"))
+                            {
+                                DataDir = File.ReadAllText($"{DPDataPath}/versions/{Edition}.discordprotector");
+                                File.Delete($"{DPDataPath}/versions/{Edition}.discordprotector");
+                            };
+                            if (File.Exists($"{DPDataPath}/hashes/{Edition}.discordprotector"))
+                            {
+                                File.Delete($"{DPDataPath}/hashes/{Edition}.discordprotector");
+                            };
+
+                            /* Move data dir */
+                            if(DataDir != "")
+                            {
+                                /* Delete old default dir for security */
+                                if (Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/{Edition}"))
+                                {
+                                    Directory.Delete($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/{Edition}",true);
+                                };
+
+                                /* Move to default dir if exists */
+                                if (Directory.Exists($"{DPDataPath}/clientdata/{DataDir}"))
+                                {
+                                    Directory.Delete($"{DPDataPath}/clientdata/{DataDir}",true);
+                                };
+                            };
+                        };
                         break;
                     case "--getuserdata":
                         /* get user data for discord version */
@@ -211,10 +298,15 @@ namespace api
                             };
 
                             /* Hide dir to prevent viruses looking for dir */
-                            Process.Start("cmd.exe", $"/C attrib +h +s \"{DPDataPath}\"");
+                            var CPSI = new ProcessStartInfo();
+                            CPSI.CreateNoWindow = true;
+                            CPSI.WindowStyle = ProcessWindowStyle.Hidden;
+                            CPSI.FileName = "cmd.exe";
+                            CPSI.Arguments = $"/C attrib +h +s \"{DPDataPath}\"";
+                            Process.Start(CPSI);
 
                             /* Check if mmm (Man in the middle) attack */
-                            if(CallerProcessPath.ToLower().Replace("\\","/") != $"{Path.ToLower().Replace("\\","/")}/{Edition.ToLower()}.exe")
+                            if (CallerProcessPath.ToLower().Replace("\\","/") != $"{Path.ToLower().Replace("\\","/")}/{Edition.ToLower()}.exe")
                             {
                                 /* Show popup */
                                 MessageBox.Show($"An unauthorised attempt to read your data was made by: {CallerProcessPath.Replace("\\","/")}","Discord Protector",MessageBoxButtons.OK,MessageBoxIcon.Exclamation);
