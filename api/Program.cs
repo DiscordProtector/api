@@ -112,6 +112,10 @@ namespace api
                             {
                                 Directory.CreateDirectory($"{DPDataPath}/clientdata");
                             };
+                            if (!Directory.Exists($"{DPDataPath}/hashes"))
+                            {
+                                Directory.CreateDirectory($"{DPDataPath}/hashes");
+                            };
                             if (!File.Exists($"{DPDataPath}/key.discordprotector"))
                             {
                                 File.WriteAllText($"{DPDataPath}/key.discordprotector","");
