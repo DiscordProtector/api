@@ -81,6 +81,27 @@ namespace api
             /* Get caller process */
             var CallerProcess = GetParentProcess();
             var CallerProcessPath = CallerProcess.GetMainModuleFileName();
+            /* Create dirs if missing */
+            if (!Directory.Exists(DPDataPath))
+            {
+                Directory.CreateDirectory(DPDataPath);
+            };
+            if (!Directory.Exists($"{DPDataPath}/versions"))
+            {
+                Directory.CreateDirectory($"{DPDataPath}/versions");
+            };
+            if (!Directory.Exists($"{DPDataPath}/protections"))
+            {
+                Directory.CreateDirectory($"{DPDataPath}/protections");
+            };
+            if (!Directory.Exists($"{DPDataPath}/clientdata"))
+            {
+                Directory.CreateDirectory($"{DPDataPath}/clientdata");
+            };
+            if (!Directory.Exists($"{DPDataPath}/hashes"))
+            {
+                Directory.CreateDirectory($"{DPDataPath}/hashes");
+            };
             /* Continue if args exist */
             if (args.Length != 0)
             {
