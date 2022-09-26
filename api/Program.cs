@@ -164,6 +164,11 @@ namespace api
                             {
                                 Directory.Delete($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/{Edition}",true);
                             };
+                            
+                            /* Create dir (failsafe) */
+                            try{
+                                Directory.CreateDirectory($"{DPDataPath}/hashes");
+                            }catch{};
 
                             /* Write new hash */
                             File.WriteAllText($"{DPDataPath}/hashes/{Edition}.discordprotector",CalculateMD5($"{Path}/{Edition}.exe"));
