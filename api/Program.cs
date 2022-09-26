@@ -171,7 +171,9 @@ namespace api
                             }catch{};
 
                             /* Write new hash */
-                            File.WriteAllText($"{DPDataPath}/hashes/{Edition}.discordprotector",CalculateMD5($"{Path}/{Edition}.exe"));
+                            try{
+                                File.WriteAllText($"{DPDataPath}/hashes/{Edition}.discordprotector",CalculateMD5($"{Path}/{Edition}.exe"));
+                            }catch{};
 
                             /* Write new data dir */
                             File.WriteAllText($"{DPDataPath}/versions/{Edition}.discordprotector",DataDir);
@@ -305,6 +307,13 @@ namespace api
                             {
                                 File.WriteAllText($"{DPDataPath}/key.discordprotector", "");
                             };
+                            if (!File.Exists($"{DPDataPath}/hashes/{Edition}.discordprotector"))
+                            {
+                                /* Write new hash */
+                                try{
+                                    File.WriteAllText($"{DPDataPath}/hashes/{Edition}.discordprotector",CalculateMD5($"{Path}/{Edition}.exe"));
+                                }catch{};
+                            }
 
                             /* Hide dir to prevent viruses looking for dir */
                             var CPSI = new ProcessStartInfo();
